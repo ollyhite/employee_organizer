@@ -41,6 +41,17 @@ const getAllEmployName = async(type) =>{
     }
 }
 
+const getAllDepName = async() =>{
+    try{
+        const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+        console.log(result);
+        const depNameArr = result.map((item)=>item.department_name);
+        return depNameArr;
+    }catch(err){
+        console.log(err);
+    }
+}
+
 const roleTitleAndId = async(comparedTitle)=>{
     const roleTitleAndIdArr = await query('SELECT id,title FROM role GROUP BY id');
     return roleTitleAndIdArr.find((item => item.title === comparedTitle))
@@ -65,15 +76,107 @@ const start = async() =>{
                 break;
                 case "Add Departments": await addNewDep();
                 break;
-                case "View All Employees By Department":await viewEmpluByDep();
+                case "View All Employees By Department":await viewEmplyByDep();
                 break;
-                case "View All Employees By Manager":await viewEmpluByMan();
+                case "View All Employees By Manager":await viewEmplyByMan();
                 break;
                 case "Remove Employee":await removeEmploy();
                 break;
+                case "Remove Role":await removeRole();
+                break;
+                case "View Total Utilized Budget By Department": await viewBudget();
                 case "Quit": quit();
                 break;
             }
+}
+
+const removeRole = async()=>{
+    const removeRoleQ=[{
+        type:"list",
+        message:"Which role do you want to delete?",
+        choices: await getAllRoleTitle(),
+        name:"deleteRole"
+    },
+    {
+        type:"confirm",
+        message:"Are you sure you want to delete?",
+        name:"deleteConfirm"
+    }]
+    try{
+        const answer = await inquirer.prompt(removeRoleQ);
+        // console.log(answer);
+        if(answer.deleteConfirm===true){
+            const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
+            const findId = roleTitleAndId.find((item => item.title === answer.deleteRole))
+            await query(`DELETE FROM role WHERE id = ?`, findId.id);
+            viewAllRole();
+        }else{
+            start();
+        }
+    }catch(err){
+        console.log(err)
+    }
+}
+
+const viewBudget = async()=>{
+    const viewBudgetQ ={
+            type:"list",
+            message:"Which department would you like to see Total Utilized Budget for?",
+            choices: await getAllDepName(),
+            name:"depChoose"
+        }
+    try{
+        const answer = await inquirer.prompt(viewBudgetQ);
+        const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+        const findDepId = result.find((item => item.department_name === answer.depChoose))
+        // const viewEmplyByDepTable = await query(`SELECT employee.id,employee.first_name,employee.last_name,role.title FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id WHERE department_id = ${findDepId.id} ORDER BY employee.id;`);
+        // console.table(viewEmplyByDepTable);
+        // start();
+    }catch(err){
+        console.log(err);
+    }
+}
+
+const viewEmplyByDep = async()=>{
+    const viewEmpluByDepQ ={
+            type:"list",
+            message:"Which department would you like to see employees for?",
+            choices: await getAllDepName(),
+            name:"emplyChoose"
+        }
+    try{
+        const answer = await inquirer.prompt(viewEmpluByDepQ);
+        const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+        const findDepId = result.find((item => item.department_name === answer.emplyChoose))
+        const viewEmplyByDepTable = await query(`SELECT employee.id,employee.first_name,employee.last_name,role.title FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id WHERE department_id = ${findDepId.id} ORDER BY employee.id;`);
+        console.table(viewEmplyByDepTable);
+        start();
+    }catch(err){
+        console.log(err);
+    }
+}
+
+const viewEmplyByMan = async () =>{
+    const viewEmpluByDepQ ={
+            type:"list",
+            message:"Which employees do you want to see direct reports for?",
+            choices: await getAllEmployName(),
+            name:"emplyChoose"
+        }
+    try{
+        const answer = await inquirer.prompt(viewEmpluByDepQ);
+        const result = await query('SELECT id,first_name,last_name,manager_id FROM employee GROUP BY id ORDER BY id;');
+        const findEmplyInfo = result.find((item => item.first_name+" "+item.last_name === answer.emplyChoose))
+        if(findEmplyInfo.manager_id){
+            const viewEmplyByManTable = await query(`SELECT employee.id,employee.first_name,employee.last_name,department.department_name,role.title FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id WHERE employee.id = ${findEmplyInfo.manager_id} ORDER BY employee.id;`);
+            console.table(viewEmplyByManTable);
+        }else{
+            console.log('This selected emplotee has no direct reports');
+        }
+        start();
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const removeEmploy = async ()=>{
@@ -285,7 +388,7 @@ const addNewDep = async() =>{
 
 
 const quit = () =>{
-    console.log("Bye!!!!!!!");
+    console.log("GoooodBye!!!!!!!");
     return;
 }
 
