@@ -41,6 +41,11 @@ const getAllEmployName = async(type) =>{
     }
 }
 
+const roleTitleAndId = async(comparedTitle)=>{
+    const roleTitleAndIdArr = await query('SELECT id,title FROM role GROUP BY id');
+    return roleTitleAndIdArr.find((item => item.title === comparedTitle))
+    // return findId;
+}
 
 const start = async() =>{
     const answer = await inquirer.prompt(questions.whatToDo);
@@ -69,6 +74,13 @@ const start = async() =>{
 const viewAllEmp = async() =>{
     try{
         const viewAllEmpQ = await query('SELECT employee.id,employee.first_name,employee.last_name,role.title,department.department_name,role.salary,employee.manager_id FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id ORDER BY employee.id;')
+        viewAllEmpQ.map((employee)=>{
+            if(employee.manager_id){
+                const findEmployName =viewAllEmpQ.find((item => item.id === employee.manager_id))
+                console.log("findEmployName",findEmployName);
+                return employee.manager_id = findEmployName.first_name+" "+findEmployName.last_name;
+            }
+        })
         console.table(viewAllEmpQ);
         start();
     }catch(err){
@@ -115,9 +127,11 @@ const addEmployToDB = async(emplAnswerObj) =>{
     try{
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId = roleTitleAndId.find((item => item.title === emplAnswerObj.role))
+        // const findId = roleTitleAndId(emplAnswerObj.role);
+        // console.log(findId);
         const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
         const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === emplAnswerObj.manager))
-        const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${emplAnswerObj.first_name}', '${emplAnswerObj.last_name}',${findId.id},${emplAnswerObj.manager==="Null"?"Null":findId.id});`);
+        const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${emplAnswerObj.first_name}', '${emplAnswerObj.last_name}',${findId.id},${emplAnswerObj.manager==="Null"?"Null":findEmployId.id});`);
         console.log(`Added ${emplAnswerObj.first_name + " " +emplAnswerObj.last_name} to the database`);
         viewAllEmp();
     }catch(err){
@@ -151,6 +165,8 @@ const updateEmpRoleToDB = async(emplRoleAnswerObj)=>{
     const name = emplRoleAnswerObj.updateEmp.trim().split(/\s+/)
     const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
     const findId = roleTitleAndId.find((item => item.title === emplRoleAnswerObj.selectRole))
+    // const findId = roleTitleAndId(emplRoleAnswerObj.selectRole);
+    // console.log(findId);
     const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id)
     VALUES ('${name[0]}', '${name[1]}',${findId.id});`);
     console.log(`Updated ${emplRoleAnswerObj.updateEmp} to the database`);
@@ -196,6 +212,8 @@ const addRoleToDB = async(roleAnswerObj)=>{
     try{
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId =roleTitleAndId.find((item => item.title === roleAnswerObj.department_name))
+        // const findId = roleTitleAndId(roleAnswerObj.department_name);
+        // console.log(findId);
         const setToDB = await query(`INSERT INTO role(title,salary,department_id)
         VALUES ('${roleAnswerObj.title}', ${Number(roleAnswerObj.salary)},${findId.id});`);
         console.log(`Added ${roleAnswerObj.title} to the database`);
