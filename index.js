@@ -47,6 +47,7 @@ const roleTitleAndId = async(comparedTitle)=>{
     // return findId;
 }
 
+
 const start = async() =>{
     const answer = await inquirer.prompt(questions.whatToDo);
             switch(answer.userTodo){
@@ -64,11 +65,45 @@ const start = async() =>{
                 break;
                 case "Add Departments": await addNewDep();
                 break;
+                case "View All Employees By Department":await viewEmpluByDep();
+                break;
+                case "View All Employees By Manager":await viewEmpluByMan();
+                break;
+                case "Remove Employee":await removeEmploy();
+                break;
                 case "Quit": quit();
                 break;
             }
 }
 
+const removeEmploy = async ()=>{
+    const removeEmployQ=[{
+        type:"list",
+        message:"Which employee do you want to delete?",
+        choices: await getAllEmployName(),
+        name:"deleteEmploy"
+    },
+    {
+        type:"confirm",
+        message:"Are you sure you want to delete?",
+        name:"deleteConfirm"
+    }]
+    try{
+        const answer = await inquirer.prompt(removeEmployQ);
+        // console.log(answer);
+        if(answer.deleteConfirm===true){
+            const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
+            const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === answer.deleteEmploy))
+            // console.log(findEmployId);
+            await query(`DELETE FROM employee WHERE id = ?`, findEmployId.id);
+            viewAllEmp();
+        }else{
+            start();
+        }
+    }catch(err){
+        console.log(err)
+    }
+}
 
 
 const viewAllEmp = async() =>{
@@ -77,7 +112,6 @@ const viewAllEmp = async() =>{
         viewAllEmpQ.map((employee)=>{
             if(employee.manager_id){
                 const findEmployName =viewAllEmpQ.find((item => item.id === employee.manager_id))
-                console.log("findEmployName",findEmployName);
                 return employee.manager_id = findEmployName.first_name+" "+findEmployName.last_name;
             }
         })
