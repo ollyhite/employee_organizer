@@ -389,7 +389,21 @@ const addNewDep = async() =>{
 
 
 const quit = () =>{
-    console.log("GoooodBye!!!!!!!");
+    figlet.text('GoodBye!!', {
+    font: 'Ghost',
+    horizontalLayout: 'default',
+    verticalLayout: 'default',
+    width: 200,
+    whitespaceBreak: true
+}, function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data);
+});
+
     return;
 }
 
