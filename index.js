@@ -54,14 +54,19 @@ const getAllDepName = async() =>{
 }
 
 const roleTitleAndId = async(comparedTitle)=>{
-    const roleTitleAndIdArr = await query('SELECT id,title FROM role GROUP BY id');
-    return roleTitleAndIdArr.find((item => item.title === comparedTitle))
-    // return findId;
+    try{
+        const roleTitleAndIdArr = await query('SELECT id,title FROM role GROUP BY id');
+        return roleTitleAndIdArr.find((item => item.title === comparedTitle))
+        // return findId;
+    }catch(err){
+        console.log(err);
+    }
 }
 
 
 const start = async() =>{
-    const answer = await inquirer.prompt(questions.whatToDo);
+    try{
+        const answer = await inquirer.prompt(questions.whatToDo);
             switch(answer.userTodo){
                 case "View All Employee": await viewAllEmp();
                 break;
@@ -89,6 +94,10 @@ const start = async() =>{
                 case "Quit": quit();
                 break;
             }
+    }catch(err){
+        console.log(err);
+    }
+    
 }
 
 const removeRole = async()=>{
@@ -102,7 +111,8 @@ const removeRole = async()=>{
         type:"confirm",
         message:"Are you sure you want to delete?",
         name:"deleteConfirm"
-    }]
+    }];
+
     try{
         const answer = await inquirer.prompt(removeRoleQ);
         // console.log(answer);
@@ -125,7 +135,8 @@ const viewBudget = async()=>{
             message:"Which department would you like to see Total Utilized Budget for?",
             choices: await getAllDepName(),
             name:"depChoose"
-        }
+        };
+
     try{
         const answer = await inquirer.prompt(viewBudgetQ);
         const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
@@ -144,7 +155,8 @@ const viewEmplyByDep = async()=>{
             message:"Which department would you like to see employees for?",
             choices: await getAllDepName(),
             name:"emplyChoose"
-        }
+        };
+
     try{
         const answer = await inquirer.prompt(viewEmpluByDepQ);
         const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
@@ -163,7 +175,8 @@ const viewEmplyByMan = async () =>{
             message:"Which employees do you want to see direct reports for?",
             choices: await getAllEmployName(),
             name:"emplyChoose"
-        }
+        };
+
     try{
         const answer = await inquirer.prompt(viewEmpluByDepQ);
         const result = await query('SELECT id,first_name,last_name,manager_id FROM employee GROUP BY id ORDER BY id;');
@@ -191,7 +204,8 @@ const removeEmploy = async ()=>{
         type:"confirm",
         message:"Are you sure you want to delete?",
         name:"deleteConfirm"
-    }]
+    }];
+
     try{
         const answer = await inquirer.prompt(removeEmployQ);
         // console.log(answer);
@@ -213,7 +227,6 @@ const removeEmploy = async ()=>{
 const viewAllEmp = async() =>{
     try{
         const viewAllEmpQ = await query('SELECT e.id AS "ID",e.first_name AS "First_Name",e.last_name AS "Last_Name",r.title AS "Title",d.department_name AS "Department",r.salary AS "Salary",e.manager_id AS "Manager" FROM department AS d JOIN role AS r ON d.id = r.department_id JOIN employee AS e on r.id = e.role_id ORDER BY e.id;')
-        console.log(viewAllEmpQ);
         viewAllEmpQ.map((employee)=>{
             if(employee.Manager){
                 const findEmployName =viewAllEmpQ.find((item => item.ID === employee.Manager))
@@ -250,7 +263,9 @@ const addNewEmp = async() =>{
             message:"Who is the employee's manager?",
             choices: await getAllEmployName("addNewEmp"),
             name:"empManager"
-        }]
+        }];
+
+    try{
         const answer = await inquirer.prompt(employeeQ);
         const emplAnswerObj = {
             first_name: answer.empFirstName,
@@ -259,10 +274,13 @@ const addNewEmp = async() =>{
             manager: answer.empManager,
         }
         addEmployToDB(emplAnswerObj);
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const addEmployToDB = async(emplAnswerObj) =>{
-    console.log("emplAnswerObj",emplAnswerObj);
+    // console.log("emplAnswerObj",emplAnswerObj);
     try{
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId = roleTitleAndId.find((item => item.title === emplAnswerObj.role))
@@ -291,25 +309,34 @@ const updateEmpRole = async() =>{
             message:"Which role do you want to assign the selected employee?",
             choices: await getAllRoleTitle(),
             name:"selectRole"
-        }]
-    const answer = await inquirer.prompt(updateEmpRoleQ);
+        }];
+
+    try{
+        const answer = await inquirer.prompt(updateEmpRoleQ);
         const emplRoleAnswerObj = {
             updateEmp: answer.updateEmp,
             selectRole: answer.selectRole,
         }
         updateEmpRoleToDB(emplRoleAnswerObj);
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const updateEmpRoleToDB = async(emplRoleAnswerObj)=>{
-    const name = emplRoleAnswerObj.updateEmp.trim().split(/\s+/)
-    const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
-    const findId = roleTitleAndId.find((item => item.title === emplRoleAnswerObj.selectRole))
-    // const findId = roleTitleAndId(emplRoleAnswerObj.selectRole);
-    // console.log(findId);
-    const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id)
-    VALUES ('${name[0]}', '${name[1]}',${findId.id});`);
-    console.log(`Updated ${emplRoleAnswerObj.updateEmp} to the database`);
-    viewAllEmp();
+    try{
+        const name = emplRoleAnswerObj.updateEmp.trim().split(/\s+/)
+        const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
+        const findId = roleTitleAndId.find((item => item.title === emplRoleAnswerObj.selectRole))
+        // const findId = roleTitleAndId(emplRoleAnswerObj.selectRole);
+        // console.log(findId);
+        const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id)
+        VALUES ('${name[0]}', '${name[1]}',${findId.id});`);
+        console.log(`Updated ${emplRoleAnswerObj.updateEmp} to the database`);
+        viewAllEmp();
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const viewAllRole = async() =>{
@@ -337,14 +364,19 @@ const addNewRole = async () =>{
         message:"Which department dose the role belong to?",
         choices: await getAllRoleTitle(),
         name:"departmentChoose"
-    }]
-    const answer = await inquirer.prompt(roleQuestion);
+    }];
+
+    try{
+        const answer = await inquirer.prompt(roleQuestion);
         const roleAnswerObj = {
             title: answer.roleName,
             salary: answer.roleSalary,
             department_name: answer.departmentChoose,
         }
         addRoleToDB(roleAnswerObj)
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const addRoleToDB = async(roleAnswerObj)=>{
@@ -375,8 +407,8 @@ const viewAllDep = async() =>{
 }
 
 const addNewDep = async() =>{
-    const answer = await inquirer.prompt(questions.addNewDep);
     try{
+        const answer = await inquirer.prompt(questions.addNewDep);
         const setToDB = await query(`INSERT INTO department(department_name)
         VALUES('${answer.departName}')`)
         console.log(`Added ${answer.departName} to the database`);
