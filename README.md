@@ -44,6 +44,7 @@ AS A business owner, I WANT to be able to view and manage the departments, roles
 - npmjs-mysql2
 - npmjs-console.table
 - npmjs-dotenv
+- npmjs-figlet
 
 ## Author Info & Getting Help
 

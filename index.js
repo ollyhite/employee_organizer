@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const util = require('util');
 const cTable = require('console.table');
 // const {whatToDoQ, addNewDepQ ,addNewRoleQ, addNewEmpQ,updateEmpRoleQ} = require('./lib/Question2');
+var figlet = require('figlet');
 
 const db = mysql.createConnection(
     {
@@ -393,4 +394,15 @@ const quit = () =>{
 }
 
 
-start();
+figlet('Employee \n Organizer', function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data)
+});
+
+setTimeout(() => {
+    start();
+}, 500)
