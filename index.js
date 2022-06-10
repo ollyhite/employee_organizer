@@ -212,11 +212,12 @@ const removeEmploy = async ()=>{
 
 const viewAllEmp = async() =>{
     try{
-        const viewAllEmpQ = await query('SELECT employee.id,employee.first_name,employee.last_name,role.title,department.department_name,role.salary,employee.manager_id FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id ORDER BY employee.id;')
+        const viewAllEmpQ = await query('SELECT e.id AS "ID",e.first_name AS "First_Name",e.last_name AS "Last_Name",r.title AS "Title",d.department_name AS "Department",r.salary AS "Salary",e.manager_id AS "Manager" FROM department AS d JOIN role AS r ON d.id = r.department_id JOIN employee AS e on r.id = e.role_id ORDER BY e.id;')
+        console.log(viewAllEmpQ);
         viewAllEmpQ.map((employee)=>{
-            if(employee.manager_id){
-                const findEmployName =viewAllEmpQ.find((item => item.id === employee.manager_id))
-                return employee.manager_id = findEmployName.first_name+" "+findEmployName.last_name;
+            if(employee.Manager){
+                const findEmployName =viewAllEmpQ.find((item => item.ID === employee.Manager))
+                return employee.Manager = findEmployName.First_Name+" "+findEmployName.Last_Name;
             }
         })
         console.table(viewAllEmpQ);
