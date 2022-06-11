@@ -106,7 +106,8 @@ const removeRole = async()=>{
             const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
             const findId = roleTitleAndId.find((item => item.title === answer.deleteRole))
             await query(`DELETE FROM role WHERE id = ?`, findId.id);
-            viewAllRole();
+            // viewAllRole();
+            start();
         }else{
             start();
         }
@@ -176,7 +177,8 @@ const removeEmploy = async ()=>{
             const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
             const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === answer.deleteEmploy))
             await query(`DELETE FROM employee WHERE id = ?`, findEmployId.id);
-            viewAllEmp();
+            // viewAllEmp();
+            start();
         }else{
             start();
         }
@@ -228,7 +230,8 @@ const addEmployToDB = async(emplAnswerObj) =>{
         const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === emplAnswerObj.manager))
         const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${emplAnswerObj.first_name}', '${emplAnswerObj.last_name}',${findId.id},${emplAnswerObj.manager==="Null"?"Null":findEmployId.id});`);
         console.log(`Added ${emplAnswerObj.first_name + " " +emplAnswerObj.last_name} to the database`);
-        viewAllEmp();
+        // viewAllEmp();
+        start();
     }catch(err){
         console.log(err);
     }
@@ -259,7 +262,8 @@ const updateEmpRoleToDB = async(emplRoleAnswerObj)=>{
         console.log(`UPDATE employee SET employee.role_id = ${findId.id} WHERE employee.id =${findEmployId.id};`);
         const setToDB = await query(`UPDATE employee SET employee.role_id = ${findId.id} WHERE employee.id =${findEmployId.id};`);
         console.log(`Updated ${emplRoleAnswerObj.updateEmp} to the database`);
-        viewAllEmp();
+        // viewAllEmp();
+        start();
     }catch(err){
         console.log(err);
     }
@@ -277,7 +281,7 @@ const viewAllRole = async() =>{
 
 const addNewRole = async () =>{
     try{
-        const addNewRoleQArr = await getAllRoleTitle();
+        const addNewRoleQArr = await getAllDepName();
         const answer = await inquirer.prompt(questions.addNewRoleQ(addNewRoleQArr));
         const roleAnswerObj = {
             title: answer.roleName,
@@ -292,13 +296,13 @@ const addNewRole = async () =>{
 
 const addRoleToDB = async(roleAnswerObj)=>{
     try{
-        const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
-        const findId =roleTitleAndId.find((item => item.title === roleAnswerObj.department_name))
+        const depArry = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+        const findId =depArry.find((item => item.department_name === roleAnswerObj.department_name))
         const setToDB = await query(`INSERT INTO role(title,salary,department_id)
         VALUES ('${roleAnswerObj.title}', ${Number(roleAnswerObj.salary)},${findId.id});`);
         console.log(`Added ${roleAnswerObj.title} to the database`);
-        const viewAllRole = await query('SELECT * FROM role')
-        console.table(viewAllRole);
+        // const viewAllRole = await query('SELECT * FROM role')
+        // console.table(viewAllRole);
         start();
     }catch(err){
         console.log(err);
@@ -321,43 +325,40 @@ const addNewDep = async() =>{
         const setToDB = await query(`INSERT INTO department(department_name)
         VALUES('${answer.departName}')`)
         console.log(`Added ${answer.departName} to the database`);
-        const viewAllDep = await query('SELECT * FROM department')
-        console.table(viewAllDep);
+        // const viewAllDep = await query('SELECT * FROM department')
+        // console.table(viewAllDep);
         start();
     }catch(err){
         console.log(err)
     }
 }
+  
 
-
-const quit = () =>{
-    figlet.text('GoodBye!!', {
-    font: 'Ghost',
-    horizontalLayout: 'default',
-    verticalLayout: 'default',
-    width: 200,
-    whitespaceBreak: true
-}, function(err, data) {
-    if (err) {
-        console.log('Something went wrong...');
-        console.dir(err);
-        return;
+const quit = async() =>{
+    const answer = await inquirer.prompt(questions.quitQ);
+    if(answer.quitConfirm){
+        figlet.text('GoodBye!!', {
+            font: 'Ghost',
+            horizontalLayout: 'default',
+            verticalLayout: 'default',
+            width: 200,
+            whitespaceBreak: true
+                }, function(err, data) {
+                    if (err) {
+                        console.log('Something went wrong...');
+                        console.dir(err);
+                        return;
+                    }
+                    console.log(data);
+        });
+        setTimeout(() => {
+            process.exit();
+        }, 500)
+    }else{
+        start();
     }
-    console.log(data);
-});
-
-    return;
 }
 
-
-figlet('Employee \n Organizer', function(err, data) {
-    if (err) {
-        console.log('Something went wrong...');
-        console.dir(err);
-        return;
-    }
-    console.log(data)
-});
 
 setTimeout(() => {
     start();
