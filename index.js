@@ -137,15 +137,9 @@ const viewBudget = async()=>{
 }
 
 const viewEmplyByDep = async()=>{
-    const viewEmpluByDepQ ={
-            type:"list",
-            message:"Which department would you like to see employees for?",
-            choices: await getAllDepName(),
-            name:"emplyChoose"
-        };
-
     try{
-        const answer = await inquirer.prompt(viewEmpluByDepQ);
+        const viewEmpluByDepQArr = await getAllDepName();
+        const answer = await inquirer.prompt(questions.viewEmpluByDepQ(viewEmpluByDepQArr));
         const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
         const findDepId = result.find((item => item.department_name === answer.emplyChoose))
         const viewEmplyByDepTable = await query(`SELECT employee.id,employee.first_name,employee.last_name,role.title FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id WHERE department_id = ${findDepId.id} ORDER BY employee.id;`);
@@ -157,15 +151,9 @@ const viewEmplyByDep = async()=>{
 }
 
 const viewEmplyByMan = async () =>{
-    const viewEmpluByDepQ ={
-            type:"list",
-            message:"Which employees do you want to see direct reports for?",
-            choices: await getAllEmployName(),
-            name:"emplyChoose"
-        };
-
     try{
-        const answer = await inquirer.prompt(viewEmpluByDepQ);
+        const viewEmpluByDepQArr = await getAllEmployName();
+        const answer = await inquirer.prompt(questions.viewEmpluByDepQ(viewEmpluByDepQArr));
         const result = await query('SELECT id,first_name,last_name,manager_id FROM employee GROUP BY id ORDER BY id;');
         const findEmplyInfo = result.find((item => item.first_name+" "+item.last_name === answer.emplyChoose))
         if(findEmplyInfo.manager_id){
@@ -181,25 +169,12 @@ const viewEmplyByMan = async () =>{
 }
 
 const removeEmploy = async ()=>{
-    const removeEmployQ=[{
-        type:"list",
-        message:"Which employee do you want to delete?",
-        choices: await getAllEmployName(),
-        name:"deleteEmploy"
-    },
-    {
-        type:"confirm",
-        message:"Are you sure you want to delete?",
-        name:"deleteConfirm"
-    }];
-
     try{
-        const answer = await inquirer.prompt(removeEmployQ);
-        // console.log(answer);
+        const removeEmployQArr = await getAllEmployName();
+        const answer = await inquirer.prompt(questions.removeEmployQ(removeEmployQArr));
         if(answer.deleteConfirm===true){
             const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
             const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === answer.deleteEmploy))
-            // console.log(findEmployId);
             await query(`DELETE FROM employee WHERE id = ?`, findEmployId.id);
             viewAllEmp();
         }else{
@@ -229,32 +204,10 @@ const viewAllEmp = async() =>{
 
 
 const addNewEmp = async() =>{
-    const employeeQ = [
-        {
-            type:"input",
-            message:"What is the employee's first name?",
-            name:"empFirstName"
-        },
-        {
-            type:"input",
-            message:"What is the employee's last name?",
-            name:"empLastName"
-        },
-        {
-            type:"list",
-            message:"What is the employee's role?",
-            choices: await getAllRoleTitle(),
-            name:"empRole"
-        },
-        {
-            type:"list",
-            message:"Who is the employee's manager?",
-            choices: await getAllEmployName("addNewEmp"),
-            name:"empManager"
-        }];
-
     try{
-        const answer = await inquirer.prompt(employeeQ);
+        const roleArr = await getAllRoleTitle();
+        const empArr = await getAllEmployName("addNewEmp");
+        const answer = await inquirer.prompt(questions.addNewEmpQ(roleArr,empArr));
         const emplAnswerObj = {
             first_name: answer.empFirstName,
             last_name: answer.empLastName,
@@ -268,12 +221,9 @@ const addNewEmp = async() =>{
 }
 
 const addEmployToDB = async(emplAnswerObj) =>{
-    // console.log("emplAnswerObj",emplAnswerObj);
     try{
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId = roleTitleAndId.find((item => item.title === emplAnswerObj.role))
-        // const findId = roleTitleAndId(emplAnswerObj.role);
-        // console.log(findId);
         const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
         const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === emplAnswerObj.manager))
         const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id,manager_id) VALUES ('${emplAnswerObj.first_name}', '${emplAnswerObj.last_name}',${findId.id},${emplAnswerObj.manager==="Null"?"Null":findEmployId.id});`);
@@ -285,22 +235,10 @@ const addEmployToDB = async(emplAnswerObj) =>{
 }
 
 const updateEmpRole = async() =>{
-    const updateEmpRoleQ=[
-        {
-            type:"list",
-            message:"Which employee's role do you want to update",
-            choices: await getAllEmployName("updateEmpRole"),
-            name:"updateEmp"
-        },
-        {
-            type:"list",
-            message:"Which role do you want to assign the selected employee?",
-            choices: await getAllRoleTitle(),
-            name:"selectRole"
-        }];
-
     try{
-        const answer = await inquirer.prompt(updateEmpRoleQ);
+        const empArr = await getAllEmployName("updateEmpRole");
+        const roleArr = await getAllRoleTitle();
+        const answer = await inquirer.prompt(questions.updateEmpRoleQ(empArr,roleArr));
         const emplRoleAnswerObj = {
             updateEmp: answer.updateEmp,
             selectRole: answer.selectRole,
@@ -316,10 +254,10 @@ const updateEmpRoleToDB = async(emplRoleAnswerObj)=>{
         const name = emplRoleAnswerObj.updateEmp.trim().split(/\s+/)
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId = roleTitleAndId.find((item => item.title === emplRoleAnswerObj.selectRole))
-        // const findId = roleTitleAndId(emplRoleAnswerObj.selectRole);
-        // console.log(findId);
-        const setToDB = await query(`INSERT INTO employee(first_name,last_name,role_id)
-        VALUES ('${name[0]}', '${name[1]}',${findId.id});`);
+        const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
+        const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === emplRoleAnswerObj.updateEmp))
+        console.log(`UPDATE employee SET employee.role_id = ${findId.id} WHERE employee.id =${findEmployId.id};`);
+        const setToDB = await query(`UPDATE employee SET employee.role_id = ${findId.id} WHERE employee.id =${findEmployId.id};`);
         console.log(`Updated ${emplRoleAnswerObj.updateEmp} to the database`);
         viewAllEmp();
     }catch(err){
@@ -338,24 +276,9 @@ const viewAllRole = async() =>{
 }
 
 const addNewRole = async () =>{
-    const roleQuestion =[{
-        type:"input",
-        message:"What is the name of the role?",
-        name:"roleName"
-    },
-    {
-        type:"input",
-        message:"What is the salary of the role?",
-        name:"roleSalary"
-    },{
-        type:"list",
-        message:"Which department dose the role belong to?",
-        choices: await getAllRoleTitle(),
-        name:"departmentChoose"
-    }];
-
     try{
-        const answer = await inquirer.prompt(addNewRoleQ);
+        const addNewRoleQArr = await getAllRoleTitle();
+        const answer = await inquirer.prompt(questions.addNewRoleQ(addNewRoleQArr));
         const roleAnswerObj = {
             title: answer.roleName,
             salary: answer.roleSalary,
@@ -371,8 +294,6 @@ const addRoleToDB = async(roleAnswerObj)=>{
     try{
         const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
         const findId =roleTitleAndId.find((item => item.title === roleAnswerObj.department_name))
-        // const findId = roleTitleAndId(roleAnswerObj.department_name);
-        // console.log(findId);
         const setToDB = await query(`INSERT INTO role(title,salary,department_id)
         VALUES ('${roleAnswerObj.title}', ${Number(roleAnswerObj.salary)},${findId.id});`);
         console.log(`Added ${roleAnswerObj.title} to the database`);
