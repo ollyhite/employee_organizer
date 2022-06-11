@@ -4,7 +4,6 @@ const questions = require("./lib/Questions");
 const mysql = require('mysql2');
 const util = require('util');
 const cTable = require('console.table');
-// const {whatToDoQ, addNewDepQ ,addNewRoleQ, addNewEmpQ,updateEmpRoleQ} = require('./lib/Question2');
 var figlet = require('figlet');
 
 const db = mysql.createConnection(
@@ -45,7 +44,6 @@ const getAllEmployName = async(type) =>{
 const getAllDepName = async() =>{
     try{
         const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
-        console.log(result);
         const depNameArr = result.map((item)=>item.department_name);
         return depNameArr;
     }catch(err){
@@ -101,21 +99,9 @@ const start = async() =>{
 }
 
 const removeRole = async()=>{
-    const removeRoleQ=[{
-        type:"list",
-        message:"Which role do you want to delete?",
-        choices: await getAllRoleTitle(),
-        name:"deleteRole"
-    },
-    {
-        type:"confirm",
-        message:"Are you sure you want to delete?",
-        name:"deleteConfirm"
-    }];
-
     try{
-        const answer = await inquirer.prompt(removeRoleQ);
-        // console.log(answer);
+        const choicesArr = await getAllRoleTitle();
+        const answer = await inquirer.prompt(questions.removeRoleQ(choicesArr));
         if(answer.deleteConfirm===true){
             const roleTitleAndId = await query('SELECT id,title FROM role GROUP BY id');
             const findId = roleTitleAndId.find((item => item.title === answer.deleteRole))
@@ -130,20 +116,21 @@ const removeRole = async()=>{
 }
 
 const viewBudget = async()=>{
-    const viewBudgetQ ={
-            type:"list",
-            message:"Which department would you like to see Total Utilized Budget for?",
-            choices: await getAllDepName(),
-            name:"depChoose"
-        };
-
     try{
-        const answer = await inquirer.prompt(viewBudgetQ);
-        const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
-        const findDepId = result.find((item => item.department_name === answer.depChoose))
-        // const viewEmplyByDepTable = await query(`SELECT employee.id,employee.first_name,employee.last_name,role.title FROM department JOIN role ON department.id = role.department_id join employee on role.id = employee.role_id WHERE department_id = ${findDepId.id} ORDER BY employee.id;`);
-        // console.table(viewEmplyByDepTable);
-        // start();
+        const choicesArr = await getAllDepName();
+        choicesArr.unshift("All");
+        const answer = await inquirer.prompt(questions.viewBudgetQ(choicesArr));
+        if(answer.depChoose==="All"){
+            const viewAllDepBudgetTable = await query('SELECT department.id, department.department_name, SUM(role.salary) AS `utilized_budget` From department JOIN role on role.department_id = department.id JOIN employee on role.id = employee.role_id GROUP BY role.department_id;');
+            console.table(viewAllDepBudgetTable);
+            start();
+        }else{
+            const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+            const findDepId = result.find((item => item.department_name === answer.depChoose))
+            const viewEmplyByDepTable = await query(`SELECT department.id, department.department_name, SUM(role.salary) AS "utilized_budget" From department JOIN role on role.department_id = department.id JOIN employee on role.id = employee.role_id WHERE department_id =${findDepId.id} GROUP BY role.department_id;`);
+            console.table(viewEmplyByDepTable);
+            start();
+        }
     }catch(err){
         console.log(err);
     }
@@ -239,6 +226,7 @@ const viewAllEmp = async() =>{
         console.log(err);
     }
 }
+
 
 const addNewEmp = async() =>{
     const employeeQ = [
@@ -367,7 +355,7 @@ const addNewRole = async () =>{
     }];
 
     try{
-        const answer = await inquirer.prompt(roleQuestion);
+        const answer = await inquirer.prompt(addNewRoleQ);
         const roleAnswerObj = {
             title: answer.roleName,
             salary: answer.roleSalary,
@@ -453,3 +441,4 @@ figlet('Employee \n Organizer', function(err, data) {
 setTimeout(() => {
     start();
 }, 500)
+
