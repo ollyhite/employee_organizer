@@ -145,14 +145,13 @@ const viewBudget = async()=>{
         if(answer.depChoose==="All"){
             const viewAllDepBudgetTable = await query('SELECT department.id, department.department_name, SUM(role.salary) AS `utilized_budget` From department JOIN role on role.department_id = department.id JOIN employee on role.id = employee.role_id GROUP BY role.department_id;');
             console.table(viewAllDepBudgetTable);
-            start();
         }else{
             const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
             const findDepId = result.find((item => item.department_name === answer.depChoose))
             const viewEmplyByDepTable = await query(`SELECT department.id, department.department_name, SUM(role.salary) AS "utilized_budget" From department JOIN role on role.department_id = department.id JOIN employee on role.id = employee.role_id WHERE department_id =${findDepId.id} GROUP BY role.department_id;`);
             console.table(viewEmplyByDepTable);
-            start();
         }
+        start();
     }catch(err){
         console.log(err);
     }
@@ -381,6 +380,14 @@ const quit = async() =>{
     }
 }
 
+figlet('Employee \n Organizer', function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data)
+});
 
 setTimeout(() => {
     start();

@@ -35,6 +35,7 @@ AS A business owner, I WANT to be able to view and manage the departments, roles
   https://drive.google.com/file/d/1m6gL57kEg2TPN-IChyoT4f2xKwrOcwWL/view
 - How to use employee_organizer \
   ![walkthrough_video](./dist/images/) \
+  https://drive.google.com/file/d/1HQLQo-nI_BRGWPfubB4V3Kx4__4XFH0x/view
 
 ## Built With
 
