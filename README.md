@@ -26,6 +26,25 @@ AS A business owner, I WANT to be able to view and manage the departments, roles
 - git clone with my repo link(can copy Installation section's first line)
 - cd in the employee_organizer file
 - enter "npm i" to install the node_module
+- add your mysql user name and password in .env file
+- go to db file to run mysql
+
+```
+    mysql -u root -p
+```
+
+- run source to create the table
+
+```
+    source schema.sql;
+```
+
+- run source to insert the data (or you can insert data in mysql branch or Ace)
+
+```
+    source seeds.sql;
+```
+
 - enter "npm start" to run the project and start answer questions to make your own employee organize
 
 ## Usage
