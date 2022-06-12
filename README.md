@@ -30,11 +30,13 @@ AS A business owner, I WANT to be able to view and manage the departments, roles
 
 ## Usage
 
+- Employee_organizer screenshot \
+  ![set_up_video](./dist/images/Screen%20Shot%202022-06-11%20at%208.54.05%20PM.png)
 - How to setup employee_organizer \
   ![set_up_video](./dist/images/set_up_EmployeeOrganizer_demoe.gif) \
   https://drive.google.com/file/d/1m6gL57kEg2TPN-IChyoT4f2xKwrOcwWL/view
 - How to use employee_organizer \
-  ![walkthrough_video](./dist/images/) \
+  ![walkthrough_video](./dist/images/employee_organizer_demo_video.gif) \
   https://drive.google.com/file/d/1HQLQo-nI_BRGWPfubB4V3Kx4__4XFH0x/view
 
 ## Built With
