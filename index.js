@@ -107,6 +107,7 @@ const removeRole = async()=>{
             const findId = roleTitleAndId.find((item => item.title === answer.deleteRole))
             await query(`DELETE FROM role WHERE id = ?`, findId.id);
             // viewAllRole();
+            console.log(`Already remove ${answer.deleteRole}!!`);
             start();
         }else{
             start();
@@ -177,6 +178,7 @@ const removeEmploy = async ()=>{
             const emplyNameAndId = await query('SELECT id,first_name,last_name FROM employee GROUP BY id');
             const findEmployId =emplyNameAndId.find((item => item.first_name+" "+item.last_name === answer.deleteEmploy))
             await query(`DELETE FROM employee WHERE id = ?`, findEmployId.id);
+            console.log(`Already remove ${answer.deleteEmploy}!!`);
             // viewAllEmp();
             start();
         }else{
