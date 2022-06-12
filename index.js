@@ -88,6 +88,8 @@ const start = async() =>{
                 break;
                 case "Remove Role":await removeRole();
                 break;
+                case "Remove Departments":await removeDep();
+                break;
                 case "View Total Utilized Budget By Department": await viewBudget();
                 case "Quit": quit();
                 break;
@@ -96,6 +98,24 @@ const start = async() =>{
         console.log(err);
     }
     
+}
+
+const removeDep = async()=>{
+    try{
+        const choicesArr = await getAllDepName();
+        const answer = await inquirer.prompt(questions.removeDepQ(choicesArr));
+        if(answer.deleteConfirm){
+            const result = await query('SELECT id,department_name FROM department GROUP BY id ORDER BY id;');
+            const findDepId = result.find((item => item.department_name === answer.deleteDep))
+            await query(`DELETE FROM department WHERE id = ?`, findDepId.id);
+            console.log(`Already remove ${answer.deleteDep}!!`);
+            start();
+        }else{
+            start();
+        }
+    }catch(err){
+        console.log(err);
+    }
 }
 
 const removeRole = async()=>{

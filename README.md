@@ -31,10 +31,10 @@ AS A business owner, I WANT to be able to view and manage the departments, roles
 ## Usage
 
 - How to setup employee_organizer \
-  ![set_up_demo](./dist/images/set_up_EmployeeOrganizer_demoe.gif) \
+  ![set_up_video](./dist/images/set_up_EmployeeOrganizer_demoe.gif) \
   https://drive.google.com/file/d/1m6gL57kEg2TPN-IChyoT4f2xKwrOcwWL/view
 - How to use employee_organizer \
-  ![set_up_demo](./dist/images/) \
+  ![walkthrough_video](./dist/images/) \
 
 ## Built With
 
